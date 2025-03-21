@@ -1,0 +1,25 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<article class="single-post">
+    {% if post.image %}
+        <img src="{{ post.image.url }}" alt="{{ post.title }}" class="post-image">
+    {% endif %}
+    <h1 class="post-title">{{ post.title }}</h1>
+    <div class="post-meta">
+        <time datetime="{{ post.published_date|date:'Y-m-d' }}">
+            {{ post.published_date|date:"F j, Y" }}
+        </time>
+        {% if post.last_modified != post.published_date %}
+            <span class="separator">•</span>
+            <span class="updated">Updated: {{ post.last_modified|date:"F j, Y" }}</span>
+        {% endif %}
+    </div>
+    <div class="post-content">
+        {{ post.content|linebreaks }}
+    </div>
+    <a href="{% url 'post_list' %}" class="btn">← Back to Posts</a>
+</article>
+{% endblock %} 

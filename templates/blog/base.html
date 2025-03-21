@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Blog{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <!-- hello -->
+    <header>
+        <div class="header-content">
+            <h1 class="site-title"><a href="{% url 'post_list' %}">My Blog</a></h1>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'post_list' %}">Home</a></li>
+                    <li><a href="{% url 'admin:index' %}">Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; {% now "Y" %} My Blog. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html> 
