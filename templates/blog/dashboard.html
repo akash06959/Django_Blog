@@ -1,0 +1,95 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Dashboard - BLOGGERS HUB{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h2>Welcome, {{ user.username }}!</h2>
+        <div class="user-info">
+            <p>Bio: {{ user.userprofile.bio|default:"No bio yet" }}</p>
+            <p class="join-date">Joined: {{ user.date_joined|date:"F j, Y" }}</p>
+        </div>
+        <div class="dashboard-actions">
+            <a href="{% url 'edit_profile' %}" class="dashboard-btn btn-primary">Edit Profile</a>
+            <a href="{% url 'post_create' %}" class="dashboard-btn btn-create">Create New Post</a>
+        </div>
+    </div>
+
+    <div class="dashboard-sections">
+        <div class="dashboard-box">
+            <h3>Your Posts</h3>
+            {% if user_posts %}
+                <ul class="post-list">
+                    {% for post in user_posts %}
+                        <li>
+                            <a href="{% url 'post_detail' post.id %}" class="post-list-title">{{ post.title }}</a>
+                            <div class="post-list-meta">
+                                <span>Published: {{ post.published_date|date:"F j, Y" }}</span>
+                                <span>Likes: {{ post.total_likes }}</span>
+                                <span>Comments: {{ post.comments.count }}</span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <p>You haven't created any posts yet.</p>
+                    <a href="{% url 'post_create' %}" class="dashboard-btn btn-create">Create Your First Post</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-box">
+            <h3>Liked Posts</h3>
+            {% if liked_posts %}
+                <ul class="post-list">
+                    {% for post in liked_posts %}
+                        <li>
+                            <a href="{% url 'post_detail' post.id %}" class="post-list-title">{{ post.title }}</a>
+                            <div class="post-list-meta">
+                                <span>By {{ post.author.username }}</span>
+                                <span>{{ post.published_date|date:"F j, Y" }}</span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <p>You haven't liked any posts yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="notifications-section" id="notifications">
+        <h3>Notifications</h3>
+        {% if notifications %}
+            <ul class="notifications-list">
+                {% for notification in notifications %}
+                    <li class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                        <div class="notification-content">
+                            <div class="notification-message">
+                                <p>
+                                    <strong>{{ notification.sender.username }}</strong> 
+                                    {{ notification.notification_type }}d on your post 
+                                    <a href="{% url 'post_detail' notification.post.id %}" class="notification-link">
+                                        "{{ notification.post.title }}"
+                                    </a>
+                                </p>
+                            </div>
+                            <div class="notification-time">
+                                {{ notification.created_at|timesince }} ago
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="no-notifications">
+                <p>No notifications yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

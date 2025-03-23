@@ -1,25 +1,152 @@
 {% extends 'blog/base.html' %}
 
-{% block title %}{{ post.title }}{% endblock %}
+{% block title %}{{ post.title }} - BLOGGERS HUB{% endblock %}
 
 {% block content %}
-<article class="single-post">
-    {% if post.image %}
-        <img src="{{ post.image.url }}" alt="{{ post.title }}" class="post-image">
-    {% endif %}
-    <h1 class="post-title">{{ post.title }}</h1>
-    <div class="post-meta">
-        <time datetime="{{ post.published_date|date:'Y-m-d' }}">
-            {{ post.published_date|date:"F j, Y" }}
-        </time>
-        {% if post.last_modified != post.published_date %}
-            <span class="separator">•</span>
-            <span class="updated">Updated: {{ post.last_modified|date:"F j, Y" }}</span>
-        {% endif %}
-    </div>
-    <div class="post-content">
-        {{ post.content|linebreaks }}
-    </div>
-    <a href="{% url 'post_list' %}" class="btn">← Back to Posts</a>
-</article>
+<div class="post-detail-container">
+    <article class="post-detail-main">
+        <div class="post-detail-box">
+            <div class="post-detail-header">
+                <div class="post-meta-top">
+                    <span class="post-category">Blog Post</span>
+                    <time class="post-date">{{ post.published_date|date:"F j, Y" }}</time>
+                </div>
+                
+                <h1 class="post-detail-title">{{ post.title }}</h1>
+                
+                <div class="post-author-info">
+                    <div class="author-details">
+                        <span class="author-name">By {{ post.author.username }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="post-detail-content">
+                <div class="post-description">
+                    {{ post.description }}
+                </div>
+                
+                <div class="post-content">
+                    {{ post.content|linebreaks }}
+                </div>
+
+                <div class="post-actions">
+                    <div class="post-stats">
+                        {% if user.is_authenticated %}
+                        <button class="like-button {% if user_liked %}liked{% endif %}" 
+                                data-post-id="{{ post.id }}">
+                            <span class="like-icon">❤</span>
+                            <span class="like-count">{{ post.total_likes }}</span> likes
+                        </button>
+                        {% else %}
+                        <div class="like-button-container">
+                            <button class="like-button" disabled>
+                                <span class="like-icon">❤</span>
+                                <span class="like-count">{{ post.total_likes }}</span> likes
+                            </button>
+                            <div class="like-login-prompt">Please <a href="{% url 'login' %}">login</a> to like posts</div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if user == post.author %}
+                    <div class="author-actions">
+                        <a href="{% url 'post_edit' post.id %}" class="action-btn btn-edit">Edit Post</a>
+                        <a href="{% url 'post_delete' post.id %}" class="action-btn btn-delete">Delete Post</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="comments-section">
+            {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <h2 class="comments-title">Comments <span class="comment-count">({{ post.comments.count }})</span></h2>
+            
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'add_comment' post.id %}" class="comment-form">
+                {% csrf_token %}
+                <textarea name="content" placeholder="Write your comment..." required></textarea>
+                <button type="submit" class="btn-submit">Post Comment</button>
+            </form>
+            {% else %}
+            <div class="login-prompt">
+                Please <a href="{% url 'login' %}">login</a> to leave a comment
+            </div>
+            {% endif %}
+
+            <div class="comments-list">
+                {% for comment in post.comments.all %}
+                <div class="comment">
+                    <div class="comment-header">
+                        <div class="comment-author-info">
+                            <span class="comment-author">{{ comment.author.username }}</span>
+                            <time class="comment-date">{{ comment.created_date|date:"F j, Y" }}</time>
+                        </div>
+                    </div>
+                    <div class="comment-content">
+                        {{ comment.content }}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="no-comments">No comments yet. Be the first to comment!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </article>
+
+    <aside class="post-sidebar">
+        <div class="author-box">
+            <h3>About the Author</h3>
+            <h4>{{ post.author.username }}</h4>
+            <p class="author-bio">{{ post.author.userprofile.bio|default:"No bio available" }}</p>
+        </div>
+
+        <div class="related-posts-box">
+            <h3>Recent Posts</h3>
+            <div class="recent-posts">
+                {% for recent_post in recent_posts %}
+                <a href="{% url 'post_detail' recent_post.id %}" class="recent-post-card">
+                    <div class="recent-post-info">
+                        <h4>{{ recent_post.title }}</h4>
+                        <time>{{ recent_post.published_date|date:"F j, Y" }}</time>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('.like-button').click(function() {
+        var button = $(this);
+        var postId = button.data('post-id');
+        
+        $.ajax({
+            url: '/blog/post/' + postId + '/like/',
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                button.toggleClass('liked');
+                button.find('.like-count').text(response.total_likes);
+            }
+        });
+    });
+});
+</script>
 {% endblock %} 
