@@ -1,0 +1,287 @@
+{% extends 'blog/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create Post - BLOGGERS HUB{% endblock %}
+
+{% block content %}
+<div class="create-post-container">
+    <div class="dashboard-box create-post-box">
+        <h2 class="dashboard-title">Create New Post</h2>
+        
+        <form method="POST" enctype="multipart/form-data" class="create-post-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="title" class="form-label">Title</label>
+                {{ form.title|as_crispy_field }}
+            </div>
+            
+            <div class="form-group">
+                <label for="description" class="form-label">Description</label>
+                {{ form.description|as_crispy_field }}
+                <small class="form-help">A brief description that appears on the home page</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="category" class="form-label">Category</label>
+                <div class="category-control">
+                    {{ form.category|as_crispy_field }}
+                    <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#newCategoryModal">
+                        Add Category
+                    </button>
+                </div>
+            </div>
+            
+            <div class="form-group content-group">
+                <label for="content" class="form-label">Content</label>
+                {{ form.content|as_crispy_field }}
+                <small class="form-help">Write your full blog post content here</small>
+            </div>
+            
+            {% if form.image %}
+            <div class="form-group">
+                <label for="image" class="form-label">Featured Image</label>
+                {{ form.image|as_crispy_field }}
+                <small class="form-help">Upload an image for your blog post (recommended size: 1200x630px)</small>
+            </div>
+            {% endif %}
+            
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Publish Post</button>
+                <a href="{% url 'post_list' %}" class="btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- New Category Modal -->
+<div class="modal fade" id="newCategoryModal" tabindex="-1" aria-labelledby="newCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newCategoryModalLabel">Create New Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="categoryName" class="form-label">Category Name</label>
+                        <input type="text" class="form-control" id="categoryName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="categoryDescription" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="categoryDescription" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-create" id="saveCategory">Create Category</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .create-post-container {
+        max-width: 800px;
+        margin: 2rem auto;
+    }
+
+    .create-post-box {
+        padding: 2rem;
+    }
+
+    .dashboard-title {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e9ecef;
+        color: #4a98d5;
+    }
+
+    .create-post-form .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-help {
+        display: block;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .textInput, 
+    .textinput,
+    .textarea,
+    .select,
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .textInput:focus, 
+    .textinput:focus,
+    .textarea:focus,
+    .select:focus,
+    .form-control:focus {
+        border-color: #4a98d5;
+        box-shadow: 0 0 0 3px rgba(74, 152, 213, 0.15);
+        outline: none;
+    }
+
+    .category-control {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .category-control > div {
+        flex-grow: 1;
+    }
+
+    .content-group .textarea {
+        min-height: 300px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-primary, .btn-secondary, .btn-create {
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background-color: #4a98d5;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #3a87c4;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+
+    .btn-create {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .btn-create:hover {
+        background-color: #218838;
+    }
+
+    /* Modal Styling */
+    .modal-content {
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .modal-header {
+        background-color: #4a98d5;
+        color: white;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .modal-title {
+        font-weight: 600;
+    }
+
+    .btn-close {
+        color: white;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e9ecef;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const saveButton = document.getElementById('saveCategory');
+    const categoryForm = document.getElementById('categoryForm');
+    const modal = document.getElementById('newCategoryModal');
+    const categorySelect = document.getElementById('id_category');
+
+    saveButton.addEventListener('click', function() {
+        const name = document.getElementById('categoryName').value;
+        const description = document.getElementById('categoryDescription').value;
+
+        if (!name) {
+            alert('Category name is required');
+            return;
+        }
+
+        // Send AJAX request to create category
+        fetch('{% url "create_category" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                name: name,
+                description: description
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Add new category to dropdown
+                const option = new Option(data.category.name, data.category.id, true, true);
+                categorySelect.add(option);
+                
+                // Close modal and reset form
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                modalInstance.hide();
+                categoryForm.reset();
+            } else {
+                alert(data.error || 'Failed to create category');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to create category');
+        });
+    });
+});
+</script>
+{% endblock %} 

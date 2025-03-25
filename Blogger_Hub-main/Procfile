@@ -1,0 +1,1 @@
+web: DJANGO_SETTINGS_MODULE=mysite.settings DEBUG=False gunicorn mysite.wsgi --log-file - 
