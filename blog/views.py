@@ -3,14 +3,28 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.contrib import messages
 from django.http import JsonResponse
-from .models import Post, Comment, UserProfile, Notification
+from .models import Post, Comment, UserProfile, Notification, Category
 from .forms import UserRegistrationForm, UserProfileForm, PostForm, CommentForm
+import json
 
 # Create your views here.
 
 def post_list(request):
-    posts = Post.objects.all().select_related('author')
-    return render(request, 'blog/post_list.html', {'posts': posts})
+    category_slug = request.GET.get('category')
+    categories = Category.objects.all()
+    
+    if category_slug:
+        category = get_object_or_404(Category, slug=category_slug)
+        posts = Post.objects.filter(category=category).select_related('author')
+    else:
+        posts = Post.objects.all().select_related('author')
+    
+    context = {
+        'posts': posts,
+        'categories': categories,
+        'current_category': category_slug
+    }
+    return render(request, 'blog/post_list.html', context)
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
@@ -187,3 +201,100 @@ def add_comment(request, post_id):
         'form': form,
         'comments': post.comments.all().order_by('-created_date')
     })
+
+@login_required
+def mark_notifications_read(request):
+    if request.method == 'POST':
+        Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+        messages.success(request, 'All notifications marked as read.')
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+def home(request):
+    category_slug = request.GET.get('category')
+    categories = Category.objects.all()
+    
+    if category_slug:
+        category = get_object_or_404(Category, slug=category_slug)
+        posts = Post.objects.filter(category=category).order_by('-date_posted')
+    else:
+        posts = Post.objects.all().order_by('-date_posted')
+    
+    context = {
+        'posts': posts,
+        'categories': categories,
+        'current_category': category_slug
+    }
+    return render(request, 'blog/home.html', context)
+
+@login_required
+def create_post(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            messages.success(request, 'Your post has been created!')
+            return redirect('blog-home')
+    else:
+        form = PostForm()
+    
+    context = {
+        'form': form,
+        'title': 'New Post',
+        'categories': Category.objects.all()
+    }
+    return render(request, 'blog/create_post.html', context)
+
+@login_required
+def update_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if post.author != request.user:
+        messages.error(request, 'You are not authorized to edit this post!')
+        return redirect('post_list')
+        
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your post has been updated!')
+            return redirect('post_detail', post_id=post.id)
+    else:
+        form = PostForm(instance=post)
+    
+    context = {
+        'form': form,
+        'post': post,
+    }
+    return render(request, 'blog/update_post.html', context)
+
+@login_required
+def create_category(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            name = data.get('name')
+            description = data.get('description', '')
+            
+            if not name:
+                return JsonResponse({'success': False, 'error': 'Category name is required'})
+            
+            # Create the category
+            category = Category.objects.create(
+                name=name,
+                description=description
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'category': {
+                    'id': category.id,
+                    'name': category.name
+                }
+            })
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})

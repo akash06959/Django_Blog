@@ -1,7 +1,7 @@
 {% extends 'blog/base.html' %}
 {% load static %}
 
-{% block title %}Login - My Blog{% endblock %}
+{% block title %}Login - BLOGGERS HUB{% endblock %}
 
 {% block content %}
 <div class="auth-container">
@@ -26,11 +26,6 @@
                 {{ form.password }}
             </div>
 
-            <div class="remember-me">
-                <input type="checkbox" name="remember" id="remember">
-                <label for="remember">Remember me</label>
-            </div>
-
             <button type="submit" class="btn-block">Sign In</button>
         </form>
 
@@ -40,28 +35,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-    .auth-form input {
-        width: 100%;
-        padding: 0.875rem 1rem;
-        border: 2px solid var(--light-gray);
-        border-radius: 8px;
-        font-size: 1rem;
-        background-color: #f8fafc;
-    }
-    
-    .auth-form input[type="text"],
-    .auth-form input[type="password"] {
-        width: 100%;
-        padding: 0.875rem 1rem;
-        border: 2px solid var(--light-gray);
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        background-color: #f8fafc;
-    }
-</style>
 {% endblock %} 

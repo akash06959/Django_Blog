@@ -1,7 +1,7 @@
 {% extends 'blog/base.html' %}
 {% load static %}
 
-{% block title %}Register - My Blog{% endblock %}
+{% block title %}Register - BLOGGERS HUB{% endblock %}
 
 {% block content %}
 <div class="auth-container">
@@ -54,29 +54,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-    .auth-form input {
-        width: 100%;
-        padding: 0.875rem 1rem;
-        border: 2px solid var(--light-gray);
-        border-radius: 8px;
-        font-size: 1rem;
-        background-color: #f8fafc;
-    }
-    
-    .auth-form input[type="text"],
-    .auth-form input[type="password"],
-    .auth-form input[type="email"] {
-        width: 100%;
-        padding: 0.875rem 1rem;
-        border: 2px solid var(--light-gray);
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        background-color: #f8fafc;
-    }
-</style>
 {% endblock %} 
